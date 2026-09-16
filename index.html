@@ -2,86 +2,243 @@
 <html lang="kk">
 <head>
   <meta charset="UTF-8">
-  <title>Sazsyrnaj Matematikalyq Sintetizator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Виртуалды Сазсырнай</title>
   <style>
-    body { font-family: sans-serif; text-align: center; padding: 40px; background: #fdfaf6; }
-    button { padding: 12px 24px; font-size: 16px; cursor: pointer; border-radius: 8px; border: 1px solid #c4a482; background: #d7b899; }
-    button:active { background: #b89776; }
+    * { box-sizing: border-box; user-select: none; -webkit-user-select: none; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: radial-gradient(circle at center, #2c1d11, #120b06);
+      color: #f3e9dc;
+      font-family: system-ui, -apple-system, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    h1 { margin-bottom: 5px; font-weight: 600; font-size: 26px; color: #dfb288; }
+    p { margin-top: 0; color: #bba28a; font-size: 14px; text-align: center; }
+
+    /* Сазсырнай пішіні */
+    .instrument {
+      position: relative;
+      width: 320px;
+      height: 200px;
+      background: linear-gradient(135deg, #a66a38 0%, #683b16 70%, #462208 100%);
+      border-radius: 120px 40px 100px 120px;
+      box-shadow: inset -10px -10px 30px rgba(0,0,0,0.6), inset 8px 8px 20px rgba(255,255,255,0.2), 0 20px 40px rgba(0,0,0,0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 30px 0;
+      border: 2px solid #5a3212;
+    }
+
+    /* Үрлейтін ауыз бөлігі */
+    .mouthpiece {
+      position: absolute;
+      left: -25px;
+      width: 35px;
+      height: 45px;
+      background: #462208;
+      border-radius: 8px 0 0 8px;
+      box-shadow: inset 2px 2px 4px rgba(255,255,255,0.2);
+    }
+
+    /* Ойықтар (Тесіктер) */
+    .holes-container {
+      display: flex;
+      gap: 14px;
+      z-index: 2;
+    }
+    .hole {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 40% 40%, #150a04, #000);
+      box-shadow: inset 2px 2px 5px rgba(0,0,0,0.9), 0 1px 2px rgba(255,255,255,0.2);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border: 1px solid rgba(0,0,0,0.4);
+      transition: transform 0.08s, box-shadow 0.08s;
+      touch-action: manipulation;
+    }
+    .hole:active, .hole.active {
+      transform: scale(0.92);
+      box-shadow: 0 0 15px rgba(223, 178, 136, 0.8), inset 0 0 6px #dfb288;
+      border-color: #dfb288;
+    }
+    .note-name { font-size: 11px; font-weight: bold; color: #e8caa4; pointer-events: none; }
+    .key-hint { font-size: 9px; color: #8e6848; pointer-events: none; }
+
+    .help-text {
+      font-size: 12px;
+      color: #92755b;
+      margin-top: 10px;
+    }
   </style>
 </head>
 <body>
 
-  <h2>Sazsyrnaj: Matematikalyq Tolqyn Eksperimenti</h2>
-  <p>Tómendegi batyrmany basyp túrynyz (fajlsyz, taza eseppen shyghatyn dybys):</p>
-  <button id="playBtn">Dybysty qosu (Üfleu)</button>
+  <h1>Сазсырнай</h1>
+  <p>Ойықтарды басыңыз немесе пернетақтаның сәйкес пернелерін қолданыңыз</p>
+
+  <div class="instrument">
+    <div class="mouthpiece"></div>
+    <div class="holes-container">
+      <div class="hole" data-freq="523.25" data-key="a"><span class="note-name">До</span><span class="key-hint">A</span></div>
+      <div class="hole" data-freq="587.33" data-key="s"><span class="note-name">Ре</span><span class="key-hint">S</span></div>
+      <div class="hole" data-freq="659.25" data-key="d"><span class="note-name">Ми</span><span class="key-hint">D</span></div>
+      <div class="hole" data-freq="698.46" data-key="f"><span class="note-name">Фа</span><span class="key-hint">F</span></div>
+      <div class="hole" data-freq="783.99" data-key="g"><span class="note-name">Соль</span><span class="key-hint">G</span></div>
+      <div class="hole" data-freq="880.00" data-key="h"><span class="note-name">Ля</span><span class="key-hint">H</span></div>
+      <div class="hole" data-freq="987.77" data-key="j"><span class="note-name">Си</span><span class="key-hint">J</span></div>
+    </div>
+  </div>
+
+  <div class="help-text">Компьютерде: A, S, D, F, G, H, J пернелерін ұстап тұрыңыз</div>
 
   <script>
     let audioCtx = null;
-    let osc = null;
-    let noiseNode = null;
-    let masterGain = null;
+    const activeVoices = new Map();
 
-    function startSazsyrnaj(freq = 440) {
-      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
-      // Master dybys retteuishi
-      masterGain = audioCtx.createGain();
-      masterGain.gain.setValueAtTime(0, audioCtx.currentTime);
-      masterGain.gain.linearRampToValueAtTime(0.7, audioCtx.currentTime + 0.1); // Zhúmsaq üfleu bastaluy
-      masterGain.connect(audioCtx.destination);
-
-      // 1. Negizgi ton (Sine tolqyny)
-      osc = audioCtx.createOscillator();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-
-      // 2. Üfleu zheli (Matematikalyq Aq Shw generatori)
-      const bufferSize = audioCtx.sampleRate * 2;
-      const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-      const output = noiseBuffer.getChannelData(0);
-      for (let i = 0; i < bufferSize; i++) {
-        output[i] = Math.random() * 2 - 1; // Eseptik aq shw
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
 
-      noiseNode = audioCtx.createBufferSource();
-      noiseNode.buffer = noiseBuffer;
-      noiseNode.loop = true;
+    // Физикалық модель: негізгі саз толқыны + үрлеу ауасы (шу)
+    function playTone(freq, id) {
+      initAudio();
+      if (activeVoices.has(id)) return;
 
-      // Zhelding zhiiligin súzgiden ótkizu (Aua sybyry)
+      const now = audioCtx.currentTime;
+
+      // 1. Негізгі дауыс (Саз үні: sine + жұмсақ rezonans)
+      const osc = audioCtx.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, now);
+
+      // 2. Үрлеу ауасы (Ақ шу)
+      const bufSize = audioCtx.sampleRate * 1;
+      const buffer = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < bufSize; i++) data[i] = Math.random() * 2 - 1;
+
+      const noise = audioCtx.createBufferSource();
+      noise.buffer = buffer;
+      noise.loop = true;
+
+      // Ауа сүзгісі (тек ысқырық жиілігін өткізеді)
       const noiseFilter = audioCtx.createBiquadFilter();
       noiseFilter.type = 'bandpass';
-      noiseFilter.frequency.setValueAtTime(freq * 1.5, audioCtx.currentTime);
-      noiseFilter.Q.setValueAtTime(3, audioCtx.currentTime);
+      noiseFilter.frequency.setValueAtTime(freq * 1.8, now);
+      noiseFilter.Q.setValueAtTime(4.0, now);
 
       const noiseGain = audioCtx.createGain();
-      noiseGain.gain.setValueAtTime(0.12, audioCtx.currentTime); // Zhel dybysyn kómekshi etu
+      noiseGain.gain.setValueAtTime(0.06, now);
 
-      noiseNode.connect(noiseFilter);
+      noise.connect(noiseFilter);
       noiseFilter.connect(noiseGain);
 
-      // Tolqyndardy qosu
-      osc.connect(masterGain);
-      noiseGain.connect(masterGain);
+      // Негізгі дыбыс реттегіші (Attack - үрлеудің басталуы)
+      const voiceGain = audioCtx.createGain();
+      voiceGain.gain.setValueAtTime(0.001, now);
+      voiceGain.gain.exponentialRampToValueAtTime(0.5, now + 0.08);
 
-      osc.start();
-      noiseNode.start();
+      osc.connect(voiceGain);
+      noiseGain.connect(voiceGain);
+      voiceGain.connect(audioCtx.destination);
+
+      osc.start(now);
+      noise.start(now);
+
+      activeVoices.set(id, { osc, noise, voiceGain });
     }
 
-    function stopSazsyrnaj() {
-      if (masterGain && audioCtx) {
-        masterGain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.15); // Zhúmsaq bәsendeu
-        setTimeout(() => {
-          if (osc) { osc.stop(); osc.disconnect(); }
-          if (noiseNode) { noiseNode.stop(); noiseNode.disconnect(); }
-        }, 150);
+    function stopTone(id) {
+      if (!activeVoices.has(id)) return;
+      const { osc, noise, voiceGain } = activeVoices.get(id);
+      const now = audioCtx.currentTime;
+
+      // Release - жұмсақ өшуі
+      voiceGain.gain.setValueAtTime(voiceGain.gain.value, now);
+      voiceGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.12);
+
+      setTimeout(() => {
+        try {
+          osc.stop();
+          noise.stop();
+          osc.disconnect();
+          noise.disconnect();
+          voiceGain.disconnect();
+        } catch (e) {}
+      }, 150);
+
+      activeVoices.delete(id);
+    }
+
+    // Түймелерге оқиғаларды байланыстыру (Touch және Click)
+    const holes = document.querySelectorAll('.hole');
+    holes.forEach((hole, index) => {
+      const freq = parseFloat(hole.dataset.freq);
+      const id = 'hole-' + index;
+
+      const start = (e) => {
+        e.preventDefault();
+        hole.classList.add('active');
+        playTone(freq, id);
+      };
+
+      const stop = (e) => {
+        e.preventDefault();
+        hole.classList.remove('active');
+        stopTone(id);
+      };
+
+      hole.addEventListener('mousedown', start);
+      hole.addEventListener('mouseup', stop);
+      hole.addEventListener('mouseleave', stop);
+
+      hole.addEventListener('touchstart', start, { passive: false });
+      hole.addEventListener('touchend', stop, { passive: false });
+      hole.addEventListener('touchcancel', stop, { passive: false });
+    });
+
+    // Пернетақта (A, S, D, F, G, H, J)
+    const keyMap = {};
+    holes.forEach((hole, index) => {
+      keyMap[hole.dataset.key] = {
+        freq: parseFloat(hole.dataset.freq),
+        id: 'key-' + hole.dataset.key,
+        el: hole
+      };
+    });
+
+    window.addEventListener('keydown', (e) => {
+      const k = e.key.toLowerCase();
+      if (keyMap[k] && !activeVoices.has(keyMap[k].id)) {
+        keyMap[k].el.classList.add('active');
+        playTone(keyMap[k].freq, keyMap[k].id);
       }
-    }
+    });
 
-    const btn = document.getElementById('playBtn');
-    btn.addEventListener('mousedown', () => startSazsyrnaj(523.25)); // 'Do' (C5) zhiiligi
-    btn.addEventListener('mouseup', stopSazsyrnaj);
-    btn.addEventListener('touchstart', (e) => { e.preventDefault(); startSazsyrnaj(523.25); });
-    btn.addEventListener('touchend', stopSazsyrnaj);
+    window.addEventListener('keyup', (e) => {
+      const k = e.key.toLowerCase();
+      if (keyMap[k]) {
+        keyMap[k].el.classList.remove('active');
+        stopTone(keyMap[k].id);
+      }
+    });
   </script>
 </body>
 </html>
