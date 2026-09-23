@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Taza Qognyr Sazsyrnaj</title>
+  <title>Табиғи Сазсырнай (Сықырсыз Монофония)</title>
   <style>
     * { box-sizing: border-box; user-select: none; -webkit-user-select: none; }
     body {
@@ -78,204 +78,176 @@
 </head>
 <body>
 
-  <h1>Qognyr Sazsyrnaj</h1>
-  <p>Zhumsaq dybys</p>
+  <h1>Сазсырнай</h1>
+  <p>Бір уақытта 3-4 тесікті еркін басып көріңіз (сықырсыз таза үн)</p>
 
   <div class="instrument">
     <div class="mouthpiece"></div>
     <div class="holes">
-      <div class="hole" data-freq="523.25" data-key="a"><span class="note-name">Do</span><span class="key-hint">A</span></div>
-      <div class="hole" data-freq="587.33" data-key="s"><span class="note-name">Re</span><span class="key-hint">S</span></div>
-      <div class="hole" data-freq="659.25" data-key="d"><span class="note-name">Mj</span><span class="key-hint">D</span></div>
-      <div class="hole" data-freq="698.46" data-key="f"><span class="note-name">Fa</span><span class="key-hint">F</span></div>
-      <div class="hole" data-freq="783.99" data-key="g"><span class="note-name">Sol</span><span class="key-hint">G</span></div>
-      <div class="hole" data-freq="880.00" data-key="h"><span class="note-name">La</span><span class="key-hint">H</span></div>
-      <div class="hole" data-freq="987.77" data-key="j"><span class="note-name">Sj</span><span class="key-hint">J</span></div>
+      <div class="hole" data-freq="523.25" data-key="a"><span class="note-name">До</span><span class="key-hint">A</span></div>
+      <div class="hole" data-freq="587.33" data-key="s"><span class="note-name">Ре</span><span class="key-hint">S</span></div>
+      <div class="hole" data-freq="659.25" data-key="d"><span class="note-name">Ми</span><span class="key-hint">D</span></div>
+      <div class="hole" data-freq="698.46" data-key="f"><span class="note-name">Фа</span><span class="key-hint">F</span></div>
+      <div class="hole" data-freq="783.99" data-key="g"><span class="note-name">Соль</span><span class="key-hint">G</span></div>
+      <div class="hole" data-freq="880.00" data-key="h"><span class="note-name">Ля</span><span class="key-hint">H</span></div>
+      <div class="hole" data-freq="987.77" data-key="j"><span class="note-name">Си</span><span class="key-hint">J</span></div>
     </div>
   </div>
 
-  <div class="status" id="statusText">Qurylghyda: A, S, D, F, G, H, J perneleri</div>
+  <div class="status" id="statusText">Компьютерде: A, S, D, F, G, H, J пернелері</div>
 
   <script>
     let audioCtx = null;
-    let compressor = null;
-    let masterOut = null;
-    let reverbGain = null;
-    const activeNotes = new Map();
+    let osc = null;
+    let vibrato = null;
+    let breathNoise = null;
+    let breathFilter = null;
+    let masterGain = null;
+    let isPlaying = false;
+
+    // Қазір басылып тұрған тесіктер жиыны
+    const pressedHoles = new Map();
 
     function createReverbBuffer(ctx, duration = 1.4, decay = 2.2) {
       const sampleRate = ctx.sampleRate;
       const length = sampleRate * duration;
       const impulse = ctx.createBuffer(2, length, sampleRate);
-      for (let channel = 0; channel < 2; channel++) {
-        const data = impulse.getChannelData(channel);
+      for (let c = 0; c < 2; c++) {
+        const d = impulse.getChannelData(c);
         for (let i = 0; i < length; i++) {
-          data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / length, decay);
+          d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / length, decay);
         }
       }
       return impulse;
     }
 
-    function initAudio() {
-      if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function initEngine() {
+      if (audioCtx) return;
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-        // 1. Акустикалық компрессор: дыбыс көлемі асқанда цифрлық сықырды жояды
-        compressor = audioCtx.createDynamicsCompressor();
-        compressor.threshold.setValueAtTime(-18, audioCtx.currentTime);
-        compressor.knee.setValueAtTime(12, audioCtx.currentTime);
-        compressor.ratio.setValueAtTime(12, audioCtx.currentTime);
-        compressor.attack.setValueAtTime(0.003, audioCtx.currentTime);
-        compressor.release.setValueAtTime(0.25, audioCtx.currentTime);
-
-        masterOut = audioCtx.createGain();
-        masterOut.gain.value = 0.7;
-
-        // 2. Жаңғырық
-        const reverbNode = audioCtx.createConvolver();
-        reverbNode.buffer = createReverbBuffer(audioCtx);
-
-        reverbGain = audioCtx.createGain();
-        reverbGain.gain.value = 0.25;
-
-        // Байланыстар: Master -> Compressor -> Шығыс
-        masterOut.connect(compressor);
-        masterOut.connect(reverbNode);
-        reverbNode.connect(reverbGain);
-        reverbGain.connect(compressor);
-        compressor.connect(audioCtx.destination);
-      }
-      if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-      }
-    }
-
-    function startVoice(freq, id) {
-      initAudio();
-      if (activeNotes.has(id)) return;
-
-      const now = audioCtx.currentTime;
-
-      // 1. Негізгі саз үні (Sine)
-      const osc = audioCtx.createOscillator();
+      // 1. Негізгі дауыс генераторы (Жалғыз Саз Үні)
+      osc = audioCtx.createOscillator();
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(freq * 0.99, now);
-      osc.frequency.exponentialRampToValueAtTime(freq, now + 0.04);
+      osc.frequency.value = 523.25;
 
-      // Демнің нәзік тербелісі
-      const vibrato = audioCtx.createOscillator();
+      // Демнің майда толқуы (Vibrato)
+      vibrato = audioCtx.createOscillator();
       const vibratoGain = audioCtx.createGain();
       vibrato.frequency.value = 5.0;
-      vibratoGain.gain.value = freq * 0.006;
+      vibratoGain.gain.value = 3.5;
       vibrato.connect(osc.frequency);
-      vibrato.start(now);
+      vibrato.start();
 
-      // 2. Саз резонаторы (600 Гц жылылығы)
+      // Саздың күңгірт резонаторы
       const clayFilter = audioCtx.createBiquadFilter();
       clayFilter.type = 'peaking';
-      clayFilter.frequency.setValueAtTime(620, now);
-      clayFilter.Q.setValueAtTime(1.8, now);
-      clayFilter.gain.setValueAtTime(4.0, now);
+      clayFilter.frequency.value = 600;
+      clayFilter.Q.value = 1.6;
+      clayFilter.gain.value = 5.0;
 
-      // Жоғарғы жасанды жиілікті шектеу (Lowpass)
       const lowpass = audioCtx.createBiquadFilter();
       lowpass.type = 'lowpass';
-      lowpass.frequency.setValueAtTime(1400, now);
+      lowpass.frequency.value = 1500;
 
-      // 3. Жұмсақ, майда үрлеу ауасы (Өткір сықырсыз)
-      const bufSize = audioCtx.sampleRate * 1;
+      // 2. Үрлеу ауасы (Жалғыз Тұрақты Ағын)
+      const bufSize = audioCtx.sampleRate * 2;
       const noiseBuffer = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
       const data = noiseBuffer.getChannelData(0);
       for (let i = 0; i < bufSize; i++) data[i] = Math.random() * 2 - 1;
 
-      const noise = audioCtx.createBufferSource();
-      noise.buffer = noiseBuffer;
-      noise.loop = true;
+      breathNoise = audioCtx.createBufferSource();
+      breathNoise.buffer = noiseBuffer;
+      breathNoise.loop = true;
 
-      const noiseFilter = audioCtx.createBiquadFilter();
-      noiseFilter.type = 'bandpass';
-      noiseFilter.frequency.setValueAtTime(freq * 1.3, now);
-      noiseFilter.Q.setValueAtTime(2.0, now);
+      breathFilter = audioCtx.createBiquadFilter();
+      breathFilter.type = 'bandpass';
+      breathFilter.frequency.value = 750;
+      breathFilter.Q.value = 1.8;
 
-      const noiseGain = audioCtx.createGain();
-      noiseGain.gain.setValueAtTime(0.045, now); // Өте майда, табиғи үрлеу
+      const breathGain = audioCtx.createGain();
+      breathGain.gain.value = 0.04; // Өте жұмсақ ауа
 
-      noise.connect(noiseFilter);
-      noiseFilter.connect(noiseGain);
+      breathNoise.connect(breathFilter);
+      breathFilter.connect(breathGain);
+      breathNoise.start();
 
-      // 4. Тіл қағудың жұмсақ екпіні
-      const attackNoise = audioCtx.createBufferSource();
-      const attBuf = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.03, audioCtx.sampleRate);
-      const attData = attBuf.getChannelData(0);
-      for(let i=0; i<attData.length; i++) attData[i] = (Math.random()*2 - 1) * (1 - i/attData.length);
-      attackNoise.buffer = attBuf;
-      const attackGain = audioCtx.createGain();
-      attackGain.gain.setValueAtTime(0.08, now);
-      attackNoise.connect(attackGain);
+      // 3. Жалпы дыбыс реттегіші
+      masterGain = audioCtx.createGain();
+      masterGain.gain.value = 0.0001;
 
-      // Дыбыстың шығуы мен күші
-      const voiceGain = audioCtx.createGain();
-      voiceGain.gain.setValueAtTime(0.001, now);
-      voiceGain.gain.exponentialRampToValueAtTime(0.4, now + 0.06);
-
+      // Байланыстыру
       osc.connect(clayFilter);
       clayFilter.connect(lowpass);
-      lowpass.connect(voiceGain);
+      lowpass.connect(masterGain);
+      breathGain.connect(masterGain);
 
-      noiseGain.connect(voiceGain);
-      attackGain.connect(voiceGain);
-      voiceGain.connect(masterOut);
+      // Жаңғырық
+      const reverb = audioCtx.createConvolver();
+      reverb.buffer = createReverbBuffer(audioCtx);
+      const reverbGain = audioCtx.createGain();
+      reverbGain.gain.value = 0.28;
 
-      osc.start(now);
-      attackNoise.start(now);
-      noise.start(now);
+      masterGain.connect(audioCtx.destination);
+      masterGain.connect(reverb);
+      reverb.connect(reverbGain);
+      reverbGain.connect(audioCtx.destination);
 
-      activeNotes.set(id, { osc, vibrato, noise, voiceGain });
-      updateMasterGain();
+      osc.start();
     }
 
-    // Бірнеше тесік басылғанда дауысты автоматты жұмсарту (Клиппингтің алдын алу)
-    function updateMasterGain() {
-      if (!masterOut) return;
-      const count = activeNotes.size;
-      const targetGain = count > 1 ? 0.7 / Math.sqrt(count) : 0.7;
-      masterOut.gain.setTargetAtTime(targetGain, audioCtx.currentTime, 0.03);
+    // Тесіктердің күйі өзгергенде дыбысты реттеу
+    function updateAcoustics() {
+      if (pressedHoles.size === 0) {
+        // Ешқандай ойық басылмағанда — дыбысты жабу
+        if (isPlaying && masterGain) {
+          masterGain.gain.setTargetAtTime(0.0001, audioCtx.currentTime, 0.08);
+          isPlaying = false;
+        }
+        return;
+      }
+
+      // Егер 3-4 тесік қатар басылса, ең соңғы немесе ең басым тесіктің жиілігін алу
+      const freqs = Array.from(pressedHoles.values());
+      const targetFreq = freqs[freqs.length - 1]; // Соңғы басылған тесік үні
+
+      if (!isPlaying) {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        // Үрлеу басталды (Attack)
+        masterGain.gain.cancelScheduledValues(audioCtx.currentTime);
+        masterGain.gain.setTargetAtTime(0.5, audioCtx.currentTime, 0.05);
+        isPlaying = true;
+      }
+
+      // Бір нотадан екіншісіне сықырсыз жұмсақ сырғу (Portamento)
+      osc.frequency.setTargetAtTime(targetFreq, audioCtx.currentTime, 0.04);
+      breathFilter.frequency.setTargetAtTime(targetFreq * 1.3, audioCtx.currentTime, 0.04);
     }
 
-    function stopVoice(id) {
-      if (!activeNotes.has(id)) return;
-      const { osc, vibrato, noise, voiceGain } = activeNotes.get(id);
-      const now = audioCtx.currentTime;
-
-      voiceGain.gain.setValueAtTime(voiceGain.gain.value, now);
-      voiceGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.12);
-
-      setTimeout(() => {
-        try {
-          osc.stop(); vibrato.stop(); noise.stop();
-          osc.disconnect(); vibrato.disconnect(); noise.disconnect();
-          voiceGain.disconnect();
-        } catch (e) {}
-      }, 140);
-
-      activeNotes.delete(id);
-      updateMasterGain();
+    function onHoleDown(id, freq) {
+      initEngine();
+      pressedHoles.set(id, freq);
+      updateAcoustics();
     }
 
-    // Оқиғалар
+    function onHoleUp(id) {
+      pressedHoles.delete(id);
+      updateAcoustics();
+    }
+
+    // Түймелерге оқиғаларды беру
     const holes = document.querySelectorAll('.hole');
     holes.forEach((hole, index) => {
       const freq = parseFloat(hole.dataset.freq);
       const id = 'h-' + index;
 
-      const onStart = (e) => { e.preventDefault(); hole.classList.add('active'); startVoice(freq, id); };
-      const onEnd = (e) => { e.preventDefault(); hole.classList.remove('active'); stopVoice(id); };
+      const start = (e) => { e.preventDefault(); hole.classList.add('active'); onHoleDown(id, freq); };
+      const stop = (e) => { e.preventDefault(); hole.classList.remove('active'); onHoleUp(id); };
 
-      hole.addEventListener('mousedown', onStart);
-      hole.addEventListener('mouseup', onEnd);
-      hole.addEventListener('mouseleave', onEnd);
-      hole.addEventListener('touchstart', onStart, { passive: false });
-      hole.addEventListener('touchend', onEnd, { passive: false });
+      hole.addEventListener('mousedown', start);
+      hole.addEventListener('mouseup', stop);
+      hole.addEventListener('mouseleave', stop);
+      hole.addEventListener('touchstart', start, { passive: false });
+      hole.addEventListener('touchend', stop, { passive: false });
     });
 
     const keyMap = {};
@@ -285,9 +257,9 @@
 
     window.addEventListener('keydown', (e) => {
       const k = e.key.toLowerCase();
-      if (keyMap[k] && !activeNotes.has(keyMap[k].id)) {
+      if (keyMap[k] && !pressedHoles.has(keyMap[k].id)) {
         keyMap[k].el.classList.add('active');
-        startVoice(keyMap[k].freq, keyMap[k].id);
+        onHoleDown(keyMap[k].id, keyMap[k].freq);
       }
     });
 
@@ -295,7 +267,7 @@
       const k = e.key.toLowerCase();
       if (keyMap[k]) {
         keyMap[k].el.classList.remove('active');
-        stopVoice(keyMap[k].id);
+        onHoleUp(keyMap[k].id);
       }
     });
   </script>
