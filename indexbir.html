@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sandyq Sazsyrnaj</title>
+  <style>
+    * { box-sizing: border-box; user-select: none; -webkit-user-select: none; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: radial-gradient(circle at center, #2c1d11, #120b06);
+      color: #f3e9dc;
+      font-family: system-ui, -apple-system, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    h1 { margin-bottom: 5px; font-weight: 600; font-size: 26px; color: #dfb288; }
+    p { margin-top: 0; color: #bba28a; font-size: 14px; text-align: center; }
+
+    /* Сазсырнай пішіні */
+    .instrument {
+      position: relative;
+      width: 320px;
+      height: 200px;
+      background: linear-gradient(135deg, #a66a38 0%, #683b16 70%, #462208 100%);
+      border-radius: 120px 40px 100px 120px;
+      box-shadow: inset -10px -10px 30px rgba(0,0,0,0.6), inset 8px 8px 20px rgba(255,255,255,0.2), 0 20px 40px rgba(0,0,0,0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 30px 0;
+      border: 2px solid #5a3212;
+    }
+
+    /* Үрлейтін ауыз бөлігі */
+    .mouthpiece {
+      position: absolute;
+      left: -25px;
+      width: 35px;
+      height: 45px;
+      background: #462208;
+      border-radius: 8px 0 0 8px;
+      box-shadow: inset 2px 2px 4px rgba(255,255,255,0.2);
+    }
+
+    /* Ойықтар (Тесіктер) */
+    .holes-container {
+      display: flex;
+      gap: 14px;
+      z-index: 2;
+    }
+    .hole {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 40% 40%, #150a04, #000);
+      box-shadow: inset 2px 2px 5px rgba(0,0,0,0.9), 0 1px 2px rgba(255,255,255,0.2);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border: 1px solid rgba(0,0,0,0.4);
+      transition: transform 0.08s, box-shadow 0.08s;
+      touch-action: manipulation;
+    }
+    .hole:active, .hole.active {
+      transform: scale(0.92);
+      box-shadow: 0 0 15px rgba(223, 178, 136, 0.8), inset 0 0 6px #dfb288;
+      border-color: #dfb288;
+    }
+    .note-name { font-size: 11px; font-weight: bold; color: #e8caa4; pointer-events: none; }
+    .key-hint { font-size: 9px; color: #8e6848; pointer-events: none; }
+
+    .help-text {
+      font-size: 12px;
+      color: #92755b;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Sazsyrnaj</h1>
+  <p>Ojyqtardy basygnyz nemese pernetaqtanygn saijkes tuijmelerin qoldanygnyz</p>
+
+  <div class="instrument">
+    <div class="mouthpiece"></div>
+    <div class="holes-container">
+      <div class="hole" data-freq="523.25" data-key="a"><span class="note-name">Do</span><span class="key-hint">A</span></div>
+      <div class="hole" data-freq="587.33" data-key="s"><span class="note-name">Re</span><span class="key-hint">S</span></div>
+      <div class="hole" data-freq="659.25" data-key="d"><span class="note-name">Mj</span><span class="key-hint">D</span></div>
+      <div class="hole" data-freq="698.46" data-key="f"><span class="note-name">Fa</span><span class="key-hint">F</span></div>
+      <div class="hole" data-freq="783.99" data-key="g"><span class="note-name">Sol</span><span class="key-hint">G</span></div>
+      <div class="hole" data-freq="880.00" data-key="h"><span class="note-name">La</span><span class="key-hint">H</span></div>
+      <div class="hole" data-freq="987.77" data-key="j"><span class="note-name">Sj</span><span class="key-hint">J</span></div>
+    </div>
+  </div>
+
+  <div class="help-text">Pernetaqtada: A, S, D, F, G, H, J tuijmelerin ustap turygnyz</div>
+
+  <script>
+    let audioCtx = null;
+    const activeVoices = new Map();
+
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    // Физикалық модель: негізгі саз толқыны + үрлеу ауасы (шу)
+    function playTone(freq, id) {
+      initAudio();
+      if (activeVoices.has(id)) return;
+
+      const now = audioCtx.currentTime;
+
+      // 1. Негізгі дауыс (Саз үні: sine + жұмсақ rezonans)
+      const osc = audioCtx.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, now);
+
+      // 2. Үрлеу ауасы (Ақ шу)
+      const bufSize = audioCtx.sampleRate * 1;
+      const buffer = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < bufSize; i++) data[i] = Math.random() * 2 - 1;
+
+      const noise = audioCtx.createBufferSource();
+      noise.buffer = buffer;
+      noise.loop = true;
+
+      // Ауа сүзгісі (тек ысқырық жиілігін өткізеді)
+      const noiseFilter = audioCtx.createBiquadFilter();
+      noiseFilter.type = 'bandpass';
+      noiseFilter.frequency.setValueAtTime(freq * 1.8, now);
+      noiseFilter.Q.setValueAtTime(4.0, now);
+
+      const noiseGain = audioCtx.createGain();
+      noiseGain.gain.setValueAtTime(0.06, now);
+
+      noise.connect(noiseFilter);
+      noiseFilter.connect(noiseGain);
+
+      // Негізгі дыбыс реттегіші (Attack - үрлеудің басталуы)
+      const voiceGain = audioCtx.createGain();
+      voiceGain.gain.setValueAtTime(0.001, now);
+      voiceGain.gain.exponentialRampToValueAtTime(0.5, now + 0.08);
+
+      osc.connect(voiceGain);
+      noiseGain.connect(voiceGain);
+      voiceGain.connect(audioCtx.destination);
+
+      osc.start(now);
+      noise.start(now);
+
+      activeVoices.set(id, { osc, noise, voiceGain });
+    }
+
+    function stopTone(id) {
+      if (!activeVoices.has(id)) return;
+      const { osc, noise, voiceGain } = activeVoices.get(id);
+      const now = audioCtx.currentTime;
+
+      // Release - жұмсақ өшуі
+      voiceGain.gain.setValueAtTime(voiceGain.gain.value, now);
+      voiceGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.12);
+
+      setTimeout(() => {
+        try {
+          osc.stop();
+          noise.stop();
+          osc.disconnect();
+          noise.disconnect();
+          voiceGain.disconnect();
+        } catch (e) {}
+      }, 150);
+
+      activeVoices.delete(id);
+    }
+
+    // Түймелерге оқиғаларды байланыстыру (Touch және Click)
+    const holes = document.querySelectorAll('.hole');
+    holes.forEach((hole, index) => {
+      const freq = parseFloat(hole.dataset.freq);
+      const id = 'hole-' + index;
+
+      const start = (e) => {
+        e.preventDefault();
+        hole.classList.add('active');
+        playTone(freq, id);
+      };
+
+      const stop = (e) => {
+        e.preventDefault();
+        hole.classList.remove('active');
+        stopTone(id);
+      };
+
+      hole.addEventListener('mousedown', start);
+      hole.addEventListener('mouseup', stop);
+      hole.addEventListener('mouseleave', stop);
+
+      hole.addEventListener('touchstart', start, { passive: false });
+      hole.addEventListener('touchend', stop, { passive: false });
+      hole.addEventListener('touchcancel', stop, { passive: false });
+    });
+
+    // Пернетақта (A, S, D, F, G, H, J)
+    const keyMap = {};
+    holes.forEach((hole, index) => {
+      keyMap[hole.dataset.key] = {
+        freq: parseFloat(hole.dataset.freq),
+        id: 'key-' + hole.dataset.key,
+        el: hole
+      };
+    });
+
+    window.addEventListener('keydown', (e) => {
+      const k = e.key.toLowerCase();
+      if (keyMap[k] && !activeVoices.has(keyMap[k].id)) {
+        keyMap[k].el.classList.add('active');
+        playTone(keyMap[k].freq, keyMap[k].id);
+      }
+    });
+
+    window.addEventListener('keyup', (e) => {
+      const k = e.key.toLowerCase();
+      if (keyMap[k]) {
+        keyMap[k].el.classList.remove('active');
+        stopTone(keyMap[k].id);
+      }
+    });
+  </script>
+</body>
+</html>
