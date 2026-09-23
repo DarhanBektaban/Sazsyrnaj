@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sandyq Sazsyrnaj</title>
+  <title>Акустикалық Сазсырнай (Pro Үн)</title>
   <style>
     * { box-sizing: border-box; user-select: none; -webkit-user-select: none; }
     body {
       margin: 0;
       min-height: 100vh;
-      background: radial-gradient(circle at center, #2c1d11, #120b06);
-      color: #f3e9dc;
+      background: radial-gradient(circle at center, #26160b, #0d0703);
+      color: #f5ebe0;
       font-family: system-ui, -apple-system, sans-serif;
       display: flex;
       flex-direction: column;
@@ -18,117 +18,165 @@
       justify-content: center;
       padding: 20px;
     }
-    h1 { margin-bottom: 5px; font-weight: 600; font-size: 26px; color: #dfb288; }
-    p { margin-top: 0; color: #bba28a; font-size: 14px; text-align: center; }
+    h1 { margin: 0 0 6px 0; font-size: 26px; color: #e0b488; }
+    p { margin: 0 0 25px 0; color: #a98d73; font-size: 14px; text-align: center; }
 
-    /* Сазсырнай пішіні */
+    /* Сазсырнай корпусы */
     .instrument {
       position: relative;
-      width: 320px;
-      height: 200px;
-      background: linear-gradient(135deg, #a66a38 0%, #683b16 70%, #462208 100%);
-      border-radius: 120px 40px 100px 120px;
-      box-shadow: inset -10px -10px 30px rgba(0,0,0,0.6), inset 8px 8px 20px rgba(255,255,255,0.2), 0 20px 40px rgba(0,0,0,0.7);
+      width: 330px;
+      height: 190px;
+      background: radial-gradient(circle at 35% 30%, #a46436, #532c11 75%, #311706 100%);
+      border-radius: 130px 45px 110px 130px;
+      box-shadow: inset -8px -8px 25px rgba(0,0,0,0.8), inset 6px 6px 15px rgba(255,255,255,0.15), 0 25px 45px rgba(0,0,0,0.8);
       display: flex;
       align-items: center;
       justify-content: center;
-      margin: 30px 0;
-      border: 2px solid #5a3212;
+      border: 2px solid #4a270f;
     }
 
-    /* Үрлейтін ауыз бөлігі */
     .mouthpiece {
       position: absolute;
-      left: -25px;
-      width: 35px;
-      height: 45px;
-      background: #462208;
+      left: -26px;
+      width: 36px;
+      height: 42px;
+      background: #381a08;
       border-radius: 8px 0 0 8px;
-      box-shadow: inset 2px 2px 4px rgba(255,255,255,0.2);
     }
 
-    /* Ойықтар (Тесіктер) */
-    .holes-container {
+    .holes {
       display: flex;
-      gap: 14px;
+      gap: 12px;
       z-index: 2;
     }
+
     .hole {
-      width: 36px;
-      height: 36px;
+      width: 38px;
+      height: 38px;
       border-radius: 50%;
-      background: radial-gradient(circle at 40% 40%, #150a04, #000);
-      box-shadow: inset 2px 2px 5px rgba(0,0,0,0.9), 0 1px 2px rgba(255,255,255,0.2);
+      background: radial-gradient(circle at 45% 45%, #1a0a03, #000);
+      box-shadow: inset 2px 2px 6px rgba(0,0,0,0.9), 0 1px 2px rgba(255,255,255,0.15);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      border: 1px solid rgba(0,0,0,0.4);
+      border: 1px solid #2e1708;
       transition: transform 0.08s, box-shadow 0.08s;
       touch-action: manipulation;
     }
+
     .hole:active, .hole.active {
       transform: scale(0.92);
-      box-shadow: 0 0 15px rgba(223, 178, 136, 0.8), inset 0 0 6px #dfb288;
-      border-color: #dfb288;
+      box-shadow: 0 0 16px rgba(224, 180, 136, 0.75), inset 0 0 6px #e0b488;
+      border-color: #e0b488;
     }
-    .note-name { font-size: 11px; font-weight: bold; color: #e8caa4; pointer-events: none; }
-    .key-hint { font-size: 9px; color: #8e6848; pointer-events: none; }
 
-    .help-text {
-      font-size: 12px;
-      color: #92755b;
-      margin-top: 10px;
-    }
+    .note-name { font-size: 11px; font-weight: bold; color: #ebd1b5; pointer-events: none; }
+    .key-hint { font-size: 9px; color: #8f6c4d; pointer-events: none; }
+    .status { margin-top: 25px; font-size: 13px; color: #b89270; min-height: 20px; }
   </style>
 </head>
 <body>
 
-  <h1>Sazsyrnaj</h1>
-  <p>Ojyqtardy basygnyz nemese pernetaqtanygn saijkes tuijmelerin qoldanygnyz</p>
+  <h1>Акустикалық Сазсырнай</h1>
+  <p>Жақсартылған кеңістік пен саз үні. 2-3 тесікті қатар басып көріңіз.</p>
 
   <div class="instrument">
     <div class="mouthpiece"></div>
-    <div class="holes-container">
-      <div class="hole" data-freq="523.25" data-key="a"><span class="note-name">Do</span><span class="key-hint">A</span></div>
-      <div class="hole" data-freq="587.33" data-key="s"><span class="note-name">Re</span><span class="key-hint">S</span></div>
-      <div class="hole" data-freq="659.25" data-key="d"><span class="note-name">Mj</span><span class="key-hint">D</span></div>
-      <div class="hole" data-freq="698.46" data-key="f"><span class="note-name">Fa</span><span class="key-hint">F</span></div>
-      <div class="hole" data-freq="783.99" data-key="g"><span class="note-name">Sol</span><span class="key-hint">G</span></div>
-      <div class="hole" data-freq="880.00" data-key="h"><span class="note-name">La</span><span class="key-hint">H</span></div>
-      <div class="hole" data-freq="987.77" data-key="j"><span class="note-name">Sj</span><span class="key-hint">J</span></div>
+    <div class="holes">
+      <div class="hole" data-freq="523.25" data-key="a"><span class="note-name">До</span><span class="key-hint">A</span></div>
+      <div class="hole" data-freq="587.33" data-key="s"><span class="note-name">Ре</span><span class="key-hint">S</span></div>
+      <div class="hole" data-freq="659.25" data-key="d"><span class="note-name">Ми</span><span class="key-hint">D</span></div>
+      <div class="hole" data-freq="698.46" data-key="f"><span class="note-name">Фа</span><span class="key-hint">F</span></div>
+      <div class="hole" data-freq="783.99" data-key="g"><span class="note-name">Соль</span><span class="key-hint">G</span></div>
+      <div class="hole" data-freq="880.00" data-key="h"><span class="note-name">Ля</span><span class="key-hint">H</span></div>
+      <div class="hole" data-freq="987.77" data-key="j"><span class="note-name">Си</span><span class="key-hint">J</span></div>
     </div>
   </div>
 
-  <div class="help-text">Pernetaqtada: A, S, D, F, G, H, J tuijmelerin ustap turygnyz</div>
+  <div class="status" id="statusText">Компьютерде: A, S, D, F, G, H, J пернелері</div>
 
   <script>
     let audioCtx = null;
-    const activeVoices = new Map();
+    let reverbNode = null;
+    let masterOut = null;
+    const activeNotes = new Map();
+
+    // Саз қабырғасының жұмсақ тембрі (Saturation Curve)
+    function makeDistortionCurve(amount = 20) {
+      const k = amount;
+      const n_samples = 44100;
+      const curve = new Float32Array(n_samples);
+      const deg = Math.PI / 180;
+      for (let i = 0; i < n_samples; ++i) {
+        let x = (i * 2) / n_samples - 1;
+        curve[i] = ((3 + k) * x * 20 * deg) / (Math.PI + k * Math.abs(x));
+      }
+      return curve;
+    }
+
+    // Кеңістік жаңғырығы (Синтетикалық импульс — Күмбез/Мазар)
+    function createReverbBuffer(ctx, duration = 1.8, decay = 2.5) {
+      const sampleRate = ctx.sampleRate;
+      const length = sampleRate * duration;
+      const impulse = ctx.createBuffer(2, length, sampleRate);
+      for (let channel = 0; channel < 2; channel++) {
+        const channelData = impulse.getChannelData(channel);
+        for (let i = 0; i < length; i++) {
+          channelData[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / length, decay);
+        }
+      }
+      return impulse;
+    }
 
     function initAudio() {
       if (!audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        // Негізгі шығыс
+        masterOut = audioCtx.createGain();
+        masterOut.gain.value = 0.8;
+
+        // Реверберация желісі
+        reverbNode = audioCtx.createConvolver();
+        reverbNode.buffer = createReverbBuffer(audioCtx, 1.8, 2.8);
+
+        const reverbGain = audioCtx.createGain();
+        reverbGain.gain.value = 0.35; // Жаңғырық күші
+
+        masterOut.connect(audioCtx.destination);
+        masterOut.connect(reverbNode);
+        reverbNode.connect(reverbGain);
+        reverbGain.connect(audioCtx.destination);
       }
       if (audioCtx.state === 'suspended') {
         audioCtx.resume();
       }
     }
 
-    // Физикалық модель: негізгі саз толқыны + үрлеу ауасы (шу)
-    function playTone(freq, id) {
+    function startVoice(freq, id) {
       initAudio();
-      if (activeVoices.has(id)) return;
+      if (activeNotes.has(id)) return;
 
       const now = audioCtx.currentTime;
+      const isMulti = activeNotes.size >= 1; // Бірнеше тесік қатар басылған ба?
 
-      // 1. Негізгі дауыс (Саз үні: sine + жұмсақ rezonans)
+      // 1. Негізгі тондар (Sine + жеңіл Triangle үндестігі)
       const osc = audioCtx.createOscillator();
       osc.type = 'sine';
       osc.frequency.setValueAtTime(freq, now);
 
-      // 2. Үрлеу ауасы (Ақ шу)
+      const oscSub = audioCtx.createOscillator();
+      oscSub.type = 'triangle';
+      oscSub.frequency.setValueAtTime(freq, now);
+
+      // 2. Саз жылулығы сүзгісі (Lowpass)
+      const bodyFilter = audioCtx.createBiquadFilter();
+      bodyFilter.type = 'lowpass';
+      bodyFilter.frequency.setValueAtTime(isMulti ? 2200 : 1600, now); // Бірнешеу болса сықыр өткірлейді
+
+      // 3. Үрлеу ауасы (Ақ шу)
       const bufSize = audioCtx.sampleRate * 1;
       const buffer = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
       const data = buffer.getChannelData(0);
@@ -138,97 +186,104 @@
       noise.buffer = buffer;
       noise.loop = true;
 
-      // Ауа сүзгісі (тек ысқырық жиілігін өткізеді)
       const noiseFilter = audioCtx.createBiquadFilter();
       noiseFilter.type = 'bandpass';
-      noiseFilter.frequency.setValueAtTime(freq * 1.8, now);
-      noiseFilter.Q.setValueAtTime(4.0, now);
+      // Егер 2-3 ойық қатар басылса, жиілік ауытқып, ысқырық қосылады
+      noiseFilter.frequency.setValueAtTime(isMulti ? freq * 2.8 : freq * 1.5, now);
+      noiseFilter.Q.setValueAtTime(isMulti ? 7 : 3.5, now);
 
       const noiseGain = audioCtx.createGain();
-      noiseGain.gain.setValueAtTime(0.06, now);
+      noiseGain.gain.setValueAtTime(isMulti ? 0.22 : 0.08, now); // Сықыр мен шудың күшеюі
 
       noise.connect(noiseFilter);
       noiseFilter.connect(noiseGain);
 
-      // Негізгі дыбыс реттегіші (Attack - үрлеудің басталуы)
+      // 4. Жұмсақ қанығу (WaveShaper)
+      const shaper = audioCtx.createWaveShaper();
+      shaper.curve = makeDistortionCurve(isMulti ? 35 : 12);
+      shaper.oversample = '2x';
+
+      // Дыбысты біріктіру
       const voiceGain = audioCtx.createGain();
       voiceGain.gain.setValueAtTime(0.001, now);
-      voiceGain.gain.exponentialRampToValueAtTime(0.5, now + 0.08);
+      voiceGain.gain.exponentialRampToValueAtTime(0.45, now + 0.07);
 
-      osc.connect(voiceGain);
+      osc.connect(bodyFilter);
+      oscSub.connect(bodyFilter);
+      bodyFilter.connect(shaper);
+      shaper.connect(voiceGain);
       noiseGain.connect(voiceGain);
-      voiceGain.connect(audioCtx.destination);
+
+      voiceGain.connect(masterOut);
 
       osc.start(now);
+      oscSub.start(now);
       noise.start(now);
 
-      activeVoices.set(id, { osc, noise, voiceGain });
+      activeNotes.set(id, { osc, oscSub, noise, voiceGain, isMulti });
+
+      if (activeNotes.size > 1) {
+        document.getElementById('statusText').innerText = 'Ауа турбуленттілігі (Сықыр/Overblowing қосылды)';
+      }
     }
 
-    function stopTone(id) {
-      if (!activeVoices.has(id)) return;
-      const { osc, noise, voiceGain } = activeVoices.get(id);
+    function stopVoice(id) {
+      if (!activeNotes.has(id)) return;
+      const { osc, oscSub, noise, voiceGain } = activeNotes.get(id);
       const now = audioCtx.currentTime;
 
-      // Release - жұмсақ өшуі
       voiceGain.gain.setValueAtTime(voiceGain.gain.value, now);
-      voiceGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.12);
+      voiceGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.14);
 
       setTimeout(() => {
         try {
-          osc.stop();
-          noise.stop();
-          osc.disconnect();
-          noise.disconnect();
+          osc.stop(); oscSub.stop(); noise.stop();
+          osc.disconnect(); oscSub.disconnect(); noise.disconnect();
           voiceGain.disconnect();
         } catch (e) {}
-      }, 150);
+      }, 160);
 
-      activeVoices.delete(id);
+      activeNotes.delete(id);
+      if (activeNotes.size <= 1) {
+        document.getElementById('statusText').innerText = 'Компьютерде: A, S, D, F, G, H, J пернелері';
+      }
     }
 
-    // Түймелерге оқиғаларды байланыстыру (Touch және Click)
+    // Түймелерге оқиғаларды қосу
     const holes = document.querySelectorAll('.hole');
     holes.forEach((hole, index) => {
       const freq = parseFloat(hole.dataset.freq);
-      const id = 'hole-' + index;
+      const id = 'h-' + index;
 
-      const start = (e) => {
+      const onStart = (e) => {
         e.preventDefault();
         hole.classList.add('active');
-        playTone(freq, id);
+        startVoice(freq, id);
       };
-
-      const stop = (e) => {
+      const onEnd = (e) => {
         e.preventDefault();
         hole.classList.remove('active');
-        stopTone(id);
+        stopVoice(id);
       };
 
-      hole.addEventListener('mousedown', start);
-      hole.addEventListener('mouseup', stop);
-      hole.addEventListener('mouseleave', stop);
-
-      hole.addEventListener('touchstart', start, { passive: false });
-      hole.addEventListener('touchend', stop, { passive: false });
-      hole.addEventListener('touchcancel', stop, { passive: false });
+      hole.addEventListener('mousedown', onStart);
+      hole.addEventListener('mouseup', onEnd);
+      hole.addEventListener('mouseleave', onEnd);
+      hole.addEventListener('touchstart', onStart, { passive: false });
+      hole.addEventListener('touchend', onEnd, { passive: false });
     });
 
-    // Пернетақта (A, S, D, F, G, H, J)
+    // Пернетақта
     const keyMap = {};
-    holes.forEach((hole, index) => {
-      keyMap[hole.dataset.key] = {
-        freq: parseFloat(hole.dataset.freq),
-        id: 'key-' + hole.dataset.key,
-        el: hole
-      };
+    holes.forEach((hole, i) => {
+      keyMap[hole.dataset.key] = { freq: parseFloat(hole.dataset.freq), id: 'h-' + i, el: hole };
     });
 
     window.addEventListener('keydown', (e) => {
       const k = e.key.toLowerCase();
-      if (keyMap[k] && !activeVoices.has(keyMap[k].id)) {
+      if (keyMap[k] && !activeNotes.has(keyMap[k].id)) {
         keyMap[k].el.classList.add('active');
-        playTone(keyMap[k].freq, keyMap[k].id);
+        startVoice(keyMap[k].freq, keyMap[k].id);
       }
     });
 
@@ -236,7 +291,7 @@
       const k = e.key.toLowerCase();
       if (keyMap[k]) {
         keyMap[k].el.classList.remove('active');
-        stopTone(keyMap[k].id);
+        stopVoice(keyMap[k].id);
       }
     });
   </script>
