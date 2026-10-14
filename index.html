@@ -3,634 +3,277 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Нағыз Сазсырнай — Гельмгольц Резонаторы</title>
+  <title>Shynajy Sazsyrnaj (Syqyrsyz)</title>
   <style>
     * { box-sizing: border-box; user-select: none; -webkit-user-select: none; }
     body {
       margin: 0;
       min-height: 100vh;
-      background: radial-gradient(circle at 50% 35%, #2b180a, #0c0603 85%);
-      color: #f0dcc5;
+      background: radial-gradient(circle at center, #231307, #080401);
+      color: #ead4be;
       font-family: system-ui, -apple-system, sans-serif;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 16px;
+      padding: 20px;
     }
-    h1 { margin: 0 0 4px 0; font-size: 25px; color: #e5b787; letter-spacing: 0.5px; }
-    .subtitle { margin: 0 0 16px 0; color: #a88769; font-size: 13px; text-align: center; max-width: 440px; }
+    h1 { margin: 0 0 4px 0; font-size: 26px; color: #dfaf82; }
+    p { margin: 0 0 25px 0; color: #a4856a; font-size: 14px; text-align: center; }
 
-    /* Басқару панелі */
-    .controls {
+    .instrument {
+      position: relative;
+      width: 330px;
+      height: 195px;
+      background: radial-gradient(circle at 35% 30%, #9e5b2f, #542b10 70%, #2f1404 100%);
+      border-radius: 130px 45px 110px 130px;
+      box-shadow: inset -8px -8px 25px rgba(0,0,0,0.85), inset 6px 6px 15px rgba(255,255,255,0.12), 0 25px 50px rgba(0,0,0,0.85);
       display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
+      align-items: center;
       justify-content: center;
-      margin-bottom: 18px;
-    }
-    .btn {
-      background: #3a200e;
-      color: #ebd3b7;
-      border: 1px solid #6b3e1e;
-      padding: 8px 14px;
-      border-radius: 20px;
-      font-size: 13px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .btn:hover { background: #4f2c14; }
-    .btn.active {
-      background: #c8874b;
-      color: #1a0c04;
-      border-color: #f3c697;
-      font-weight: 600;
+      border: 2px solid #4a240c;
     }
 
-    /* Жұмыртқа пішінді нағыз сазсырнай корпусы */
-    .sazsyrnaj-wrapper {
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin: 10px 0 18px 0;
-    }
-
-    .clay-body {
-      position: relative;
-      width: 240px;
-      height: 310px;
-      /* Жұмыртқа тәрізді сопақша геометрия */
-      border-radius: 50% 50% 46% 46% / 60% 60% 40% 40%;
-      background: radial-gradient(circle at 38% 28%, #b36b37 0%, #7d4218 48%, #472108 85%, #291103 100%);
-      box-shadow:
-        inset -14px -18px 35px rgba(0,0,0,0.85),
-        inset 10px 12px 22px rgba(255,220,180,0.18),
-        0 28px 55px rgba(0,0,0,0.9);
-      border: 2px solid #572b0f;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: space-between;
-      padding: 26px 28px 38px 28px;
-    }
-
-    /* Ою-өрнек бедері */
-    .ornament {
+    .mouthpiece {
       position: absolute;
-      top: 52%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 90px;
-      height: 130px;
-      opacity: 0.16;
-      pointer-events: none;
+      left: -25px;
+      width: 35px;
+      height: 42px;
+      background: #361705;
+      border-radius: 8px 0 0 8px;
     }
 
-    /* Жоғарғы үрлеу ойығы (Ауыздық) */
-    .embouchure-zone {
+    .holes {
       display: flex;
-      flex-direction: column;
-      align-items: center;
+      gap: 12px;
       z-index: 2;
     }
-    .embouchure {
-      width: 34px;
-      height: 24px;
-      border-radius: 50%;
-      background: radial-gradient(circle at 50% 60%, #090301, #261004);
-      box-shadow: inset 0 4px 8px #000, 0 2px 3px rgba(255,210,170,0.2);
-      border: 2px solid #3c1b07;
-      transition: box-shadow 0.15s, border-color 0.15s;
-    }
-    .embouchure.blowing {
-      box-shadow: 0 0 20px rgba(235, 185, 130, 0.7), inset 0 2px 6px #e5b787;
-      border-color: #e5b787;
-    }
-    .emb-label {
-      font-size: 10px;
-      color: #c79e79;
-      margin-top: 4px;
-      letter-spacing: 0.5px;
-    }
-
-    /* 6 пернелік ойық: Екі қолға симметриялы 2 баған */
-    .finger-grid {
-      width: 100%;
-      display: flex;
-      justify-content: space-between;
-      padding: 0 10px;
-      z-index: 2;
-      margin-top: 10px;
-    }
-    .hand-col {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
-    .hand-col.left .hole:nth-child(2) { transform: translateX(-8px); }
-    .hand-col.right .hole:nth-child(2) { transform: translateX(8px); }
 
     .hole {
-      width: 44px;
-      height: 44px;
+      width: 38px;
+      height: 38px;
       border-radius: 50%;
-      background: radial-gradient(circle at 40% 40%, #1c0b03, #040100);
-      box-shadow:
-        inset 3px 4px 8px rgba(0,0,0,0.95),
-        inset -1px -1px 4px rgba(255,200,150,0.12),
-        0 2px 4px rgba(255,220,180,0.15);
-      border: 2px solid #331606;
+      background: radial-gradient(circle at 45% 45%, #180902, #000);
+      box-shadow: inset 2px 2px 6px rgba(0,0,0,0.9), 0 1px 2px rgba(255,255,255,0.12);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      transition: background 0.1s, box-shadow 0.1s, border-color 0.1s;
+      border: 1px solid #2b1305;
+      transition: transform 0.08s, box-shadow 0.08s;
       touch-action: manipulation;
     }
 
-    /* Ойық басылғанда (Белсенді күй) */
-    .hole.active {
-      background: radial-gradient(circle at 50% 50%, #6b3b19, #2d1405);
-      box-shadow: 0 0 16px rgba(229, 183, 135, 0.65), inset 0 0 8px #e5b787;
-      border-color: #e5b787;
+    .hole:active, .hole.active {
+      transform: scale(0.92);
+      box-shadow: 0 0 16px rgba(223, 175, 130, 0.75), inset 0 0 6px #dfaf82;
+      border-color: #dfaf82;
     }
 
-    .note-label { font-size: 11px; font-weight: 700; color: #eed7c0; pointer-events: none; }
-    .key-label { font-size: 10px; color: #9c7452; pointer-events: none; }
-
-    /* Акустикалық монитор мен дем реттегіш */
-    .panel {
-      background: rgba(35, 18, 7, 0.75);
-      border: 1px solid #4a2710;
-      border-radius: 14px;
-      padding: 12px 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
-      width: 100%;
-      max-width: 380px;
-    }
-    .slider-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      width: 100%;
-      font-size: 12px;
-      color: #c9a788;
-    }
-    input[type="range"] {
-      width: 180px;
-      accent-color: #d6985c;
-    }
-    .readout {
-      font-size: 13px;
-      color: #e5b787;
-      font-weight: 600;
-      min-height: 20px;
-      text-align: center;
-    }
-    .hint {
-      font-size: 11px;
-      color: #8c6c50;
-      text-align: center;
-      margin-top: 6px;
-    }
+    .note-name { font-size: 11px; font-weight: bold; color: #eed5be; pointer-events: none; }
+    .key-hint { font-size: 9px; color: #8e6848; pointer-events: none; }
+    .status { margin-top: 25px; font-size: 13px; color: #b38a67; min-height: 20px; }
   </style>
 </head>
 <body>
 
-  <h1>Сазсырнай</h1>
-  <p class="subtitle">Тұйық саз камерасының Гельмгольц резонансы мен «һу-у» тынысты акустикасы</p>
+  <h1>Shynajy Sazsyrnaj</h1>
+  <p>Balshyq uindestigi zhaine taza uin (syqyrsyz)</p>
 
-  <div class="controls">
-    <button class="btn" id="demoBtn">▶ Дала сарыны (Тыңдап көру)</button>
-    <button class="btn" id="droneBtn">Төменгі До (Базалық үрлеу: SPACE)</button>
-  </div>
-
-  <div class="sazsyrnaj-wrapper">
-    <div class="clay-body">
-      <!-- Үрлеу ойығы -->
-      <div class="embouchure-zone">
-        <div class="embouchure" id="embouchure"></div>
-        <span class="emb-label">ҮРЛЕУ ОЙЫҒЫ</span>
-      </div>
-
-      <!-- Қазақы қошқармүйіз оюы (SVG) -->
-      <svg class="ornament" viewBox="0 0 100 140" fill="none" stroke="#f0dcc5" stroke-width="3">
-        <path d="M50 15 C25 15, 20 45, 38 55 C50 62, 50 78, 38 85 C20 95, 25 125, 50 125 C75 125, 80 95, 62 85 C50 78, 50 62, 62 55 C80 45, 75 15, 50 15 Z"/>
-        <circle cx="50" cy="70" r="6" />
-      </svg>
-
-      <!-- 6 Пернелік ойық (Сол қол: S, D, F | Оң қол: J, K, L) -->
-      <div class="finger-grid">
-        <div class="hand-col left">
-          <div class="hole" data-area="0.26" data-key="s" data-name="Ре"><span class="note-label">Ре</span><span class="key-label">S</span></div>
-          <div class="hole" data-area="0.33" data-key="d" data-name="Ми"><span class="note-label">Ми</span><span class="key-label">D</span></div>
-          <div class="hole" data-area="0.22" data-key="f" data-name="Фа"><span class="note-label">Фа</span><span class="key-label">F</span></div>
-        </div>
-        <div class="hand-col right">
-          <div class="hole" data-area="0.42" data-key="j" data-name="Соль"><span class="note-label">Соль</span><span class="key-label">J</span></div>
-          <div class="hole" data-area="0.48" data-key="k" data-name="Ля"><span class="note-label">Ля</span><span class="key-label">K</span></div>
-          <div class="hole" data-area="0.54" data-key="l" data-name="Си"><span class="note-label">Си</span><span class="key-label">L</span></div>
-        </div>
-      </div>
+  <div class="instrument">
+    <div class="mouthpiece"></div>
+    <div class="holes">
+      <div class="hole" data-freq="523.25" data-key="a"><span class="note-name">Do</span><span class="key-hint">A</span></div>
+      <div class="hole" data-freq="587.33" data-key="s"><span class="note-name">Re</span><span class="key-hint">S</span></div>
+      <div class="hole" data-freq="659.25" data-key="d"><span class="note-name">Mj</span><span class="key-hint">D</span></div>
+      <div class="hole" data-freq="698.46" data-key="f"><span class="note-name">Fa</span><span class="key-hint">F</span></div>
+      <div class="hole" data-freq="783.99" data-key="g"><span class="note-name">Sol</span><span class="key-hint">G</span></div>
+      <div class="hole" data-freq="880.00" data-key="h"><span class="note-name">La</span><span class="key-hint">H</span></div>
+      <div class="hole" data-freq="987.77" data-key="j"><span class="note-name">Sj</span><span class="key-hint">J</span></div>
     </div>
   </div>
 
-  <div class="panel">
-    <div class="readout" id="freqReadout">Ойықтарды басыңыз (1, 2, 3 ойықты қатар басуға болады)</div>
-    <div class="slider-row">
-      <span>Дем қысымы (Үрлеу күші):</span>
-      <input type="range" id="breathSlider" min="0.4" max="1.4" step="0.05" value="0.9">
-    </div>
-    <div class="slider-row">
-      <span>Қуыс ауасының гуілі («Һу-у»):</span>
-      <input type="range" id="airSlider" min="0.1" max="1.2" step="0.05" value="0.55">
-    </div>
-  </div>
-
-  <div class="hint">Пернетақта: Сол қол — <b>S, D, F</b> | Оң қол — <b>J, K, L</b> | Барлық ойық жабық «До» — <b>SPACE</b></div>
+  <div class="status" id="statusText">Pernetaqtada: A, S, D, F, G, H, J tuijmeleri</div>
 
   <script>
     let audioCtx = null;
-    let mainOsc = null;
-    let subOsc = null;
-    let cavityFilter1 = null;
-    let cavityFilter2 = null;
-    let toneFilter = null;
+    let osc = null;
+    let clayWave = null;
+    let vibrato = null;
+    let breathNoise = null;
+    let breathFilter = null;
+    let breathGain = null;
     let voiceGain = null;
-    let airLevelGain = null;
-    let vibratoGain = null;
+    let isPlaying = false;
 
-    // Негізгі жабық камера жиілігі (До - C5 = 523.25 Гц)
-    const BASE_FREQ = 523.25;
-    const openHoles = new Map();
-    let baseBlowActive = false;
-    let demoInterval = null;
+    const pressedHoles = new Map();
 
-    // Күмбез жаңғырығын жасау
-    function createReverb(ctx, seconds = 1.6, decay = 2.3) {
-      const len = ctx.sampleRate * seconds;
+    function createReverbBuffer(ctx, duration = 1.3, decay = 2.0) {
+      const len = ctx.sampleRate * duration;
       const buf = ctx.createBuffer(2, len, ctx.sampleRate);
       for (let c = 0; c < 2; c++) {
-        const ch = buf.getChannelData(c);
+        const d = buf.getChannelData(c);
         for (let i = 0; i < len; i++) {
-          ch[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, decay);
+          d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, decay);
         }
       }
       return buf;
     }
 
-    // Қызғылт шу (Pink Noise - 1/f): радио сықыры жоқ, жұмсақ табиғи дем ауасы
-    function createPinkNoise(ctx) {
-      const bufSize = ctx.sampleRate * 3;
-      const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
-      const out = buf.getChannelData(0);
-      let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
-      for (let i = 0; i < bufSize; i++) {
-        const white = Math.random() * 2 - 1;
-        b0 = 0.99886 * b0 + white * 0.0555179;
-        b1 = 0.99332 * b1 + white * 0.0750759;
-        b2 = 0.96900 * b2 + white * 0.1538520;
-        b3 = 0.86650 * b3 + white * 0.3104856;
-        b4 = 0.55000 * b4 + white * 0.5329522;
-        b5 = -0.7616 * b5 - white * 0.0168980;
-        out[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362) * 0.04;
-        b6 = white * 0.115926;
-      }
-      return buf;
-    }
-
-    function initAudio() {
-      if (audioCtx) {
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-        return;
-      }
+    function initEngine() {
+      if (audioCtx) return;
       audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-      // 1. Тұйық саз шардың толқын пішіні (Тек 1-ші және аздап 2-ші гармоника)
-      const real = new Float32Array([0, 1.0, 0.14, 0.03, 0.0]);
+      // 1. Сазсырнайдың балшықтық спектрі (PeriodicWave)
+      // Нағыз сазсырнайда 1-ші негізгі үн (1.0), 2-ші гармоника әлсіз (0.15), 3-ші гармоника (0.05)
+      const real = new Float32Array([0, 1.0, 0.18, 0.06, 0.02]);
       const imag = new Float32Array(real.length);
-      const vesselWave = audioCtx.createPeriodicWave(real, imag);
+      clayWave = audioCtx.createPeriodicWave(real, imag);
 
-      mainOsc = audioCtx.createOscillator();
-      mainOsc.setPeriodicWave(vesselWave);
-      mainOsc.frequency.value = BASE_FREQ;
+      osc = audioCtx.createOscillator();
+      osc.setPeriodicWave(clayWave);
+      osc.frequency.value = 523.25;
 
-      // Қуыс көлемінің төменгі жылуын беретін қосалқы синус (Sub-warmth)
-      subOsc = audioCtx.createOscillator();
-      subOsc.type = 'sine';
-      subOsc.frequency.value = BASE_FREQ;
-      const subGain = audioCtx.createGain();
-      subGain.gain.value = 0.25;
-
-      // Табиғи тыныс дірілі (Vibrato)
-      const vibrato = audioCtx.createOscillator();
-      vibratoGain = audioCtx.createGain();
-      vibrato.frequency.value = 5.1;
-      vibratoGain.gain.value = 2.8;
-      vibrato.connect(mainOsc.frequency);
-      vibrato.connect(subOsc.frequency);
+      // Тыныстың табиғи микро-толқуы (Vibrato)
+      vibrato = audioCtx.createOscillator();
+      const vibratoGain = audioCtx.createGain();
+      vibrato.frequency.value = 5.2;
+      vibratoGain.gain.value = 3.0;
+      vibrato.connect(osc.frequency);
       vibrato.start();
 
-      // Саз балшықтың форманталық сүзгісі (620 Гц жылы резонанс)
-      const clayFormant = audioCtx.createBiquadFilter();
-      clayFormant.type = 'peaking';
-      clayFormant.frequency.value = 620;
-      clayFormant.Q.value = 1.4;
-      clayFormant.gain.value = 4.5;
+      // Саздың төменгі күңгірт сүзгісі
+      const bodyFilter = audioCtx.createBiquadFilter();
+      bodyFilter.type = 'lowpass';
+      bodyFilter.frequency.value = 1800;
 
-      // Артық шыңылды жұтатын жұмсақ Lowpass
-      toneFilter = audioCtx.createBiquadFilter();
-      toneFilter.type = 'lowpass';
-      toneFilter.frequency.value = 1250;
+      // 2. Дем шуы (Ауа сыбыры)
+      const bufSize = audioCtx.sampleRate * 2;
+      const noiseBuffer = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
+      const data = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < bufSize; i++) data[i] = Math.random() * 2 - 1;
 
-      // 2. Қуыс ішіндегі ауа гуілі ("Һу-у-у" резонанстық тыныс)
-      const noiseSource = audioCtx.createBufferSource();
-      noiseSource.buffer = createPinkNoise(audioCtx);
-      noiseSource.loop = true;
+      breathNoise = audioCtx.createBufferSource();
+      breathNoise.buffer = noiseBuffer;
+      breathNoise.loop = true;
 
-      // 1-ші резонанстық сүзгі: дәл нотаның жиілігіндегі қуыс гуілі (Q=14)
-      cavityFilter1 = audioCtx.createBiquadFilter();
-      cavityFilter1.type = 'bandpass';
-      cavityFilter1.frequency.value = BASE_FREQ;
-      cavityFilter1.Q.value = 14.0;
+      breathFilter = audioCtx.createBiquadFilter();
+      breathFilter.type = 'bandpass';
+      breathFilter.frequency.value = 650;
+      breathFilter.Q.value = 1.5;
 
-      // 2-ші сүзгі: ерін мен ойық жиегінің үйкелісі (Edge tone)
-      cavityFilter2 = audioCtx.createBiquadFilter();
-      cavityFilter2.type = 'bandpass';
-      cavityFilter2.frequency.value = BASE_FREQ * 2;
-      cavityFilter2.Q.value = 4.5;
+      breathGain = audioCtx.createGain();
+      breathGain.gain.value = 0.035; // Қоңыр ауа
 
-      airLevelGain = audioCtx.createGain();
-      airLevelGain.gain.value = 0.55;
+      breathNoise.connect(breathFilter);
+      breathFilter.connect(breathGain);
+      breathNoise.start();
 
-      noiseSource.connect(cavityFilter1);
-      noiseSource.connect(cavityFilter2);
-
-      const g1 = audioCtx.createGain(); g1.gain.value = 1.6;
-      const g2 = audioCtx.createGain(); g2.gain.value = 0.35;
-      cavityFilter1.connect(g1);
-      cavityFilter2.connect(g2);
-      g1.connect(airLevelGain);
-      g2.connect(airLevelGain);
-      noiseSource.start();
-
-      // 3. Негізгі дауыс реттегіші (Ешқашан үзілмейді, тек setTargetAtTime арқылы басқарылады)
+      // 3. Негізгі дауыс басқарушысы (Кідіріссіз әрі сықырсыз)
       voiceGain = audioCtx.createGain();
-      voiceGain.gain.value = 0.00001;
+      voiceGain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
 
-      mainOsc.connect(clayFormant);
-      subOsc.connect(subGain);
-      subGain.connect(clayFormant);
-      clayFormant.connect(toneFilter);
-      toneFilter.connect(voiceGain);
-      airLevelGain.connect(voiceGain);
+      osc.connect(bodyFilter);
+      bodyFilter.connect(voiceGain);
+      breathGain.connect(voiceGain);
 
-      // Кеңістік жаңғырығы (Reverb)
+      // Жаңғырық желісі
       const reverb = audioCtx.createConvolver();
-      reverb.buffer = createReverb(audioCtx);
+      reverb.buffer = createReverbBuffer(audioCtx);
       const reverbGain = audioCtx.createGain();
-      reverbGain.gain.value = 0.32;
+      reverbGain.gain.value = 0.25;
 
       voiceGain.connect(audioCtx.destination);
       voiceGain.connect(reverb);
       reverb.connect(reverbGain);
       reverbGain.connect(audioCtx.destination);
 
-      mainOsc.start();
-      subOsc.start();
+      osc.start();
     }
 
-    // Гельмгольц формуласымен жиілікті және демді есептеу
-    function updateHelmholtzAcoustics(targetFreqOverride = null) {
-      if (!audioCtx) return;
+    function updateAcoustics() {
       const now = audioCtx.currentTime;
-      const emb = document.getElementById('embouchure');
-      const readout = document.getElementById('freqReadout');
-      const breathPower = parseFloat(document.getElementById('breathSlider').value);
-      const airMix = parseFloat(document.getElementById('airSlider').value);
 
-      airLevelGain.gain.setTargetAtTime(airMix, now, 0.03);
-
-      const shouldPlay = (openHoles.size > 0) || baseBlowActive || (targetFreqOverride !== null);
-
-      if (!shouldPlay) {
-        // Дем тоқтағанда — сықырсыз, 0.045с уақыт тұрақтысымен жұмсақ сөну
-        voiceGain.gain.setTargetAtTime(0.00001, now, 0.045);
-        emb.classList.remove('blowing');
-        readout.innerText = 'Тыныштық күйі — ойықтарды басып ойнаңыз';
+      if (pressedHoles.size === 0) {
+        if (isPlaying) {
+          // Дыбысты өшіргенде сықыр шықпас үшін жұмсақ 0.08с деңгейде басу
+          voiceGain.gain.cancelScheduledValues(now);
+          voiceGain.gain.setValueAtTime(voiceGain.gain.value, now);
+          voiceGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.08);
+          isPlaying = false;
+        }
         return;
       }
 
-      emb.classList.add('blowing');
+      // Соңғы басылған тесіктің үні
+      const freqs = Array.from(pressedHoles.values());
+      const targetFreq = freqs[freqs.length - 1];
 
-      let freq = BASE_FREQ;
-      if (targetFreqOverride !== null) {
-        freq = targetFreqOverride;
-      } else if (openHoles.size === 0 && baseBlowActive) {
-        // Барлық ойық жабық — базалық До (523.25 Гц)
-        freq = BASE_FREQ;
+      if (!isPlaying) {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        // Үрлеу басталғанда (Атака) - тырс етпеуі үшін сызықты жұмсақ көтеру
+        voiceGain.gain.cancelScheduledValues(now);
+        voiceGain.gain.setValueAtTime(0.0001, now);
+        voiceGain.gain.linearRampToValueAtTime(0.42, now + 0.04);
+        osc.frequency.setValueAtTime(targetFreq, now);
+        isPlaying = true;
       } else {
-        // Гельмгольц заңы: ашылған ойықтардың ауданы қосылады: f = f0 * sqrt(1 + sum(A))
-        let totalArea = 0;
-        const names = [];
-        openHoles.forEach((val) => {
-          totalArea += val.area;
-          names.push(val.name);
-        });
-        freq = BASE_FREQ * Math.sqrt(1 + totalArea);
-        readout.innerText = `Ашық ойықтар: ${names.join(' + ')} → Жиілік: ${Math.round(freq)} Гц`;
+        // Ойықтар ауысқанда нота кенет секірмей, 0.035с-та жұмсақ сырғиды
+        osc.frequency.cancelScheduledValues(now);
+        osc.frequency.setTargetAtTime(targetFreq, now, 0.025);
       }
 
-      if (baseBlowActive && openHoles.size === 0) {
-        readout.innerText = `Барлық ойық жабық (Базалық До) → ${Math.round(freq)} Гц`;
-      }
-
-      // Үрлеу қысымы артқанда жиілік табиғи түрде сәл көтеріледі (Acoustic pitch bend)
-      const pressurePitchBend = 1 + (breathPower - 0.9) * 0.025;
-      const finalFreq = freq * pressurePitchBend;
-
-      // Саусақ ауысқандағы өте қысқа табиғи бүлкіл (Articulation dip — сирена болмауы үшін)
-      voiceGain.gain.setTargetAtTime(0.32 * breathPower, now, 0.025);
-
-      // Жиілікті ешқандай сықырсыз сырғыту
-      mainOsc.frequency.setTargetAtTime(finalFreq, now, 0.018);
-      subOsc.frequency.setTargetAtTime(finalFreq, now, 0.018);
-
-      // Қуыс гуілінің жиілігі де дәл сол нотаға резонанс жасайды
-      cavityFilter1.frequency.setTargetAtTime(finalFreq, now, 0.02);
-      cavityFilter2.frequency.setTargetAtTime(finalFreq * 2, now, 0.02);
-      toneFilter.frequency.setTargetAtTime(finalFreq * 2.1 * breathPower, now, 0.03);
+      // Ауа сүзгісін де сол нотаның қоңырлығына сай бағыттау
+      breathFilter.frequency.setTargetAtTime(targetFreq * 1.2, now, 0.03);
     }
 
-    // Ойықтарды басу / жіберу
-    const holeElements = document.querySelectorAll('.hole');
-    holeElements.forEach((el, idx) => {
-      const area = parseFloat(el.dataset.area);
-      const name = el.dataset.name;
-      const id = 'hole-' + idx;
+    function onHoleDown(id, freq) {
+      initEngine();
+      pressedHoles.set(id, freq);
+      updateAcoustics();
+    }
 
-      const press = (e) => {
-        e.preventDefault();
-        stopDemoIfRunning();
-        initAudio();
-        el.classList.add('active');
-        openHoles.set(id, { area, name });
-        updateHelmholtzAcoustics();
-      };
+    function onHoleUp(id) {
+      pressedHoles.delete(id);
+      updateAcoustics();
+    }
 
-      const release = (e) => {
-        e.preventDefault();
-        el.classList.remove('active');
-        openHoles.delete(id);
-        updateHelmholtzAcoustics();
-      };
+    // Түймелер
+    const holes = document.querySelectorAll('.hole');
+    holes.forEach((hole, index) => {
+      const freq = parseFloat(hole.dataset.freq);
+      const id = 'h-' + index;
 
-      el.addEventListener('mousedown', press);
-      el.addEventListener('mouseup', release);
-      el.addEventListener('mouseleave', release);
-      el.addEventListener('touchstart', press, { passive: false });
-      el.addEventListener('touchend', release, { passive: false });
-      el.addEventListener('touchcancel', release, { passive: false });
+      const start = (e) => { e.preventDefault(); hole.classList.add('active'); onHoleDown(id, freq); };
+      const stop = (e) => { e.preventDefault(); hole.classList.remove('active'); onHoleUp(id); };
+
+      hole.addEventListener('mousedown', start);
+      hole.addEventListener('mouseup', stop);
+      hole.addEventListener('mouseleave', stop);
+      hole.addEventListener('touchstart', start, { passive: false });
+      hole.addEventListener('touchend', stop, { passive: false });
     });
 
-    // Төменгі До (SPACE немесе батырма)
-    const droneBtn = document.getElementById('droneBtn');
-    const startDrone = (e) => {
-      if (e) e.preventDefault();
-      stopDemoIfRunning();
-      initAudio();
-      baseBlowActive = true;
-      droneBtn.classList.add('active');
-      updateHelmholtzAcoustics();
-    };
-    const stopDrone = (e) => {
-      if (e) e.preventDefault();
-      baseBlowActive = false;
-      droneBtn.classList.remove('active');
-      updateHelmholtzAcoustics();
-    };
-    droneBtn.addEventListener('mousedown', startDrone);
-    droneBtn.addEventListener('mouseup', stopDrone);
-    droneBtn.addEventListener('mouseleave', stopDrone);
-    droneBtn.addEventListener('touchstart', startDrone, { passive: false });
-    droneBtn.addEventListener('touchend', stopDrone, { passive: false });
-
-    // Пернетақта (S, D, F, J, K, L және SPACE)
-    const keyLookup = {};
-    holeElements.forEach((el, idx) => {
-      keyLookup[el.dataset.key] = {
-        el,
-        id: 'hole-' + idx,
-        area: parseFloat(el.dataset.area),
-        name: el.dataset.name
-      };
+    const keyMap = {};
+    holes.forEach((hole, i) => {
+      keyMap[hole.dataset.key] = { freq: parseFloat(hole.dataset.freq), id: 'h-' + i, el: hole };
     });
 
     window.addEventListener('keydown', (e) => {
-      if (e.code === 'Space') {
-        e.preventDefault();
-        if (!baseBlowActive) startDrone();
-        return;
-      }
       const k = e.key.toLowerCase();
-      if (keyLookup[k] && !openHoles.has(keyLookup[k].id)) {
-        stopDemoIfRunning();
-        initAudio();
-        keyLookup[k].el.classList.add('active');
-        openHoles.set(keyLookup[k].id, { area: keyLookup[k].area, name: keyLookup[k].name });
-        updateHelmholtzAcoustics();
+      if (keyMap[k] && !pressedHoles.has(keyMap[k].id)) {
+        keyMap[k].el.classList.add('active');
+        onHoleDown(keyMap[k].id, keyMap[k].freq);
       }
     });
 
     window.addEventListener('keyup', (e) => {
-      if (e.code === 'Space') {
-        stopDrone();
-        return;
-      }
       const k = e.key.toLowerCase();
-      if (keyLookup[k]) {
-        keyLookup[k].el.classList.remove('active');
-        openHoles.delete(keyLookup[k].id);
-        updateHelmholtzAcoustics();
+      if (keyMap[k]) {
+        keyMap[k].el.classList.remove('active');
+        onHoleUp(keyMap[k].id);
       }
-    });
-
-    // Слайдерлер
-    document.getElementById('breathSlider').addEventListener('input', () => updateHelmholtzAcoustics());
-    document.getElementById('airSlider').addEventListener('input', () => updateHelmholtzAcoustics());
-
-    // «Дала сарыны» авто-күй орындаушысы
-    const demoBtn = document.getElementById('demoBtn');
-    const melody = [
-      { keys: [], drone: true, dur: 650 },
-      { keys: ['s'], drone: false, dur: 550 },
-      { keys: ['d'], drone: false, dur: 900 },
-      { keys: ['s'], drone: false, dur: 450 },
-      { keys: ['f'], drone: false, dur: 700 },
-      { keys: ['d'], drone: false, dur: 600 },
-      { keys: ['s'], drone: false, dur: 850 },
-      { keys: [], drone: true, dur: 1100 },
-      { keys: ['j'], drone: false, dur: 650 },
-      { keys: ['k'], drone: false, dur: 800 },
-      { keys: ['j'], drone: false, dur: 500 },
-      { keys: ['f'], drone: false, dur: 600 },
-      { keys: ['d'], drone: false, dur: 700 },
-      { keys: ['s'], drone: false, dur: 1200 },
-    ];
-
-    function stopDemoIfRunning() {
-      if (demoInterval) {
-        clearTimeout(demoInterval);
-        demoInterval = null;
-        demoBtn.classList.remove('active');
-        demoBtn.innerText = '▶ Дала сарыны (Тыңдап көру)';
-        openHoles.clear();
-        baseBlowActive = false;
-        holeElements.forEach(el => el.classList.remove('active'));
-        droneBtn.classList.remove('active');
-      }
-    }
-
-    demoBtn.addEventListener('click', () => {
-      if (demoInterval) {
-        stopDemoIfRunning();
-        updateHelmholtzAcoustics();
-        return;
-      }
-      initAudio();
-      demoBtn.classList.add('active');
-      demoBtn.innerText = '⏹ Тоқтату';
-
-      let step = 0;
-      function playNextStep() {
-        if (!demoBtn.classList.contains('active')) return;
-        openHoles.clear();
-        holeElements.forEach(el => el.classList.remove('active'));
-        baseBlowActive = false;
-        droneBtn.classList.remove('active');
-
-        const item = melody[step];
-        if (item.drone) {
-          baseBlowActive = true;
-          droneBtn.classList.add('active');
-        }
-        item.keys.forEach(k => {
-          if (keyLookup[k]) {
-            keyLookup[k].el.classList.add('active');
-            openHoles.set(keyLookup[k].id, { area: keyLookup[k].area, name: keyLookup[k].name });
-          }
-        });
-
-        updateHelmholtzAcoustics();
-        step = (step + 1) % melody.length;
-        demoInterval = setTimeout(playNextStep, item.dur);
-      }
-      playNextStep();
     });
   </script>
 </body>
