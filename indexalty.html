@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shynajy Sazsyrnaj (Syqyrsyz)</title>
+  <style>
+    * { box-sizing: border-box; user-select: none; -webkit-user-select: none; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: radial-gradient(circle at center, #231307, #080401);
+      color: #ead4be;
+      font-family: system-ui, -apple-system, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    h1 { margin: 0 0 4px 0; font-size: 26px; color: #dfaf82; }
+    p { margin: 0 0 25px 0; color: #a4856a; font-size: 14px; text-align: center; }
+
+    .instrument {
+      position: relative;
+      width: 330px;
+      height: 195px;
+      background: radial-gradient(circle at 35% 30%, #9e5b2f, #542b10 70%, #2f1404 100%);
+      border-radius: 130px 45px 110px 130px;
+      box-shadow: inset -8px -8px 25px rgba(0,0,0,0.85), inset 6px 6px 15px rgba(255,255,255,0.12), 0 25px 50px rgba(0,0,0,0.85);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid #4a240c;
+    }
+
+    .mouthpiece {
+      position: absolute;
+      left: -25px;
+      width: 35px;
+      height: 42px;
+      background: #361705;
+      border-radius: 8px 0 0 8px;
+    }
+
+    .holes {
+      display: flex;
+      gap: 12px;
+      z-index: 2;
+    }
+
+    .hole {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 45% 45%, #180902, #000);
+      box-shadow: inset 2px 2px 6px rgba(0,0,0,0.9), 0 1px 2px rgba(255,255,255,0.12);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border: 1px solid #2b1305;
+      transition: transform 0.08s, box-shadow 0.08s;
+      touch-action: manipulation;
+    }
+
+    .hole:active, .hole.active {
+      transform: scale(0.92);
+      box-shadow: 0 0 16px rgba(223, 175, 130, 0.75), inset 0 0 6px #dfaf82;
+      border-color: #dfaf82;
+    }
+
+    .note-name { font-size: 11px; font-weight: bold; color: #eed5be; pointer-events: none; }
+    .key-hint { font-size: 9px; color: #8e6848; pointer-events: none; }
+    .status { margin-top: 25px; font-size: 13px; color: #b38a67; min-height: 20px; }
+  </style>
+</head>
+<body>
+
+  <h1>Shynajy Sazsyrnaj</h1>
+  <p>Balshyq uindestigi zhaine taza uin (syqyrsyz)</p>
+
+  <div class="instrument">
+    <div class="mouthpiece"></div>
+    <div class="holes">
+      <div class="hole" data-freq="523.25" data-key="a"><span class="note-name">Do</span><span class="key-hint">A</span></div>
+      <div class="hole" data-freq="587.33" data-key="s"><span class="note-name">Re</span><span class="key-hint">S</span></div>
+      <div class="hole" data-freq="659.25" data-key="d"><span class="note-name">Mj</span><span class="key-hint">D</span></div>
+      <div class="hole" data-freq="698.46" data-key="f"><span class="note-name">Fa</span><span class="key-hint">F</span></div>
+      <div class="hole" data-freq="783.99" data-key="g"><span class="note-name">Sol</span><span class="key-hint">G</span></div>
+      <div class="hole" data-freq="880.00" data-key="h"><span class="note-name">La</span><span class="key-hint">H</span></div>
+      <div class="hole" data-freq="987.77" data-key="j"><span class="note-name">Sj</span><span class="key-hint">J</span></div>
+    </div>
+  </div>
+
+  <div class="status" id="statusText">Pernetaqtada: A, S, D, F, G, H, J tuijmeleri</div>
+
+  <script>
+    let audioCtx = null;
+    let osc = null;
+    let clayWave = null;
+    let vibrato = null;
+    let breathNoise = null;
+    let breathFilter = null;
+    let breathGain = null;
+    let voiceGain = null;
+    let isPlaying = false;
+
+    const pressedHoles = new Map();
+
+    function createReverbBuffer(ctx, duration = 1.3, decay = 2.0) {
+      const len = ctx.sampleRate * duration;
+      const buf = ctx.createBuffer(2, len, ctx.sampleRate);
+      for (let c = 0; c < 2; c++) {
+        const d = buf.getChannelData(c);
+        for (let i = 0; i < len; i++) {
+          d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, decay);
+        }
+      }
+      return buf;
+    }
+
+    function initEngine() {
+      if (audioCtx) return;
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+      // 1. Сазсырнайдың балшықтық спектрі (PeriodicWave)
+      // Нағыз сазсырнайда 1-ші негізгі үн (1.0), 2-ші гармоника әлсіз (0.15), 3-ші гармоника (0.05)
+      const real = new Float32Array([0, 1.0, 0.18, 0.06, 0.02]);
+      const imag = new Float32Array(real.length);
+      clayWave = audioCtx.createPeriodicWave(real, imag);
+
+      osc = audioCtx.createOscillator();
+      osc.setPeriodicWave(clayWave);
+      osc.frequency.value = 523.25;
+
+      // Тыныстың табиғи микро-толқуы (Vibrato)
+      vibrato = audioCtx.createOscillator();
+      const vibratoGain = audioCtx.createGain();
+      vibrato.frequency.value = 5.2;
+      vibratoGain.gain.value = 3.0;
+      vibrato.connect(osc.frequency);
+      vibrato.start();
+
+      // Саздың төменгі күңгірт сүзгісі
+      const bodyFilter = audioCtx.createBiquadFilter();
+      bodyFilter.type = 'lowpass';
+      bodyFilter.frequency.value = 1800;
+
+      // 2. Дем шуы (Ауа сыбыры)
+      const bufSize = audioCtx.sampleRate * 2;
+      const noiseBuffer = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
+      const data = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < bufSize; i++) data[i] = Math.random() * 2 - 1;
+
+      breathNoise = audioCtx.createBufferSource();
+      breathNoise.buffer = noiseBuffer;
+      breathNoise.loop = true;
+
+      breathFilter = audioCtx.createBiquadFilter();
+      breathFilter.type = 'bandpass';
+      breathFilter.frequency.value = 650;
+      breathFilter.Q.value = 1.5;
+
+      breathGain = audioCtx.createGain();
+      breathGain.gain.value = 0.035; // Қоңыр ауа
+
+      breathNoise.connect(breathFilter);
+      breathFilter.connect(breathGain);
+      breathNoise.start();
+
+      // 3. Негізгі дауыс басқарушысы (Кідіріссіз әрі сықырсыз)
+      voiceGain = audioCtx.createGain();
+      voiceGain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+
+      osc.connect(bodyFilter);
+      bodyFilter.connect(voiceGain);
+      breathGain.connect(voiceGain);
+
+      // Жаңғырық желісі
+      const reverb = audioCtx.createConvolver();
+      reverb.buffer = createReverbBuffer(audioCtx);
+      const reverbGain = audioCtx.createGain();
+      reverbGain.gain.value = 0.25;
+
+      voiceGain.connect(audioCtx.destination);
+      voiceGain.connect(reverb);
+      reverb.connect(reverbGain);
+      reverbGain.connect(audioCtx.destination);
+
+      osc.start();
+    }
+
+    function updateAcoustics() {
+      const now = audioCtx.currentTime;
+
+      if (pressedHoles.size === 0) {
+        if (isPlaying) {
+          // Дыбысты өшіргенде сықыр шықпас үшін жұмсақ 0.08с деңгейде басу
+          voiceGain.gain.cancelScheduledValues(now);
+          voiceGain.gain.setValueAtTime(voiceGain.gain.value, now);
+          voiceGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.08);
+          isPlaying = false;
+        }
+        return;
+      }
+
+      // Соңғы басылған тесіктің үні
+      const freqs = Array.from(pressedHoles.values());
+      const targetFreq = freqs[freqs.length - 1];
+
+      if (!isPlaying) {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        // Үрлеу басталғанда (Атака) - тырс етпеуі үшін сызықты жұмсақ көтеру
+        voiceGain.gain.cancelScheduledValues(now);
+        voiceGain.gain.setValueAtTime(0.0001, now);
+        voiceGain.gain.linearRampToValueAtTime(0.42, now + 0.04);
+        osc.frequency.setValueAtTime(targetFreq, now);
+        isPlaying = true;
+      } else {
+        // Ойықтар ауысқанда нота кенет секірмей, 0.035с-та жұмсақ сырғиды
+        osc.frequency.cancelScheduledValues(now);
+        osc.frequency.setTargetAtTime(targetFreq, now, 0.025);
+      }
+
+      // Ауа сүзгісін де сол нотаның қоңырлығына сай бағыттау
+      breathFilter.frequency.setTargetAtTime(targetFreq * 1.2, now, 0.03);
+    }
+
+    function onHoleDown(id, freq) {
+      initEngine();
+      pressedHoles.set(id, freq);
+      updateAcoustics();
+    }
+
+    function onHoleUp(id) {
+      pressedHoles.delete(id);
+      updateAcoustics();
+    }
+
+    // Түймелер
+    const holes = document.querySelectorAll('.hole');
+    holes.forEach((hole, index) => {
+      const freq = parseFloat(hole.dataset.freq);
+      const id = 'h-' + index;
+
+      const start = (e) => { e.preventDefault(); hole.classList.add('active'); onHoleDown(id, freq); };
+      const stop = (e) => { e.preventDefault(); hole.classList.remove('active'); onHoleUp(id); };
+
+      hole.addEventListener('mousedown', start);
+      hole.addEventListener('mouseup', stop);
+      hole.addEventListener('mouseleave', stop);
+      hole.addEventListener('touchstart', start, { passive: false });
+      hole.addEventListener('touchend', stop, { passive: false });
+    });
+
+    const keyMap = {};
+    holes.forEach((hole, i) => {
+      keyMap[hole.dataset.key] = { freq: parseFloat(hole.dataset.freq), id: 'h-' + i, el: hole };
+    });
+
+    window.addEventListener('keydown', (e) => {
+      const k = e.key.toLowerCase();
+      if (keyMap[k] && !pressedHoles.has(keyMap[k].id)) {
+        keyMap[k].el.classList.add('active');
+        onHoleDown(keyMap[k].id, keyMap[k].freq);
+      }
+    });
+
+    window.addEventListener('keyup', (e) => {
+      const k = e.key.toLowerCase();
+      if (keyMap[k]) {
+        keyMap[k].el.classList.remove('active');
+        onHoleUp(keyMap[k].id);
+      }
+    });
+  </script>
+</body>
+</html>
